@@ -1,0 +1,96 @@
+<div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+        <div>
+            <% if (imagenes && imagenes.length > 0) { %>
+                <div style="background: #f5f5f5; padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
+                    <% const portada = imagenes.find(img => img.es_portada) || imagenes[0]; %>
+                    <img src="/<%= portada.ruta_archivo %>" alt="<%= libro.titulo %>" style="width: 100%; border-radius: 5px; max-height: 400px; object-fit: cover;">
+                </div>
+            <% } else { %>
+                <div style="background: #f5f5f5; padding: 2rem; border-radius: 10px; text-align: center; color: #7f8c8d;">
+                    📚 Sin imagen
+                </div>
+            <% } %>
+        </div>
+
+        <div>
+            <h2 style="color: #2c3e50; margin-bottom: 1rem;"><%= libro.titulo %></h2>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <p style="margin-bottom: 0.5rem;"><strong>ISBN:</strong> <%= libro.isbn %></p>
+                <p style="margin-bottom: 0.5rem;"><strong>Año de publicación:</strong> <%= libro.year_publicacion || 'No especificado' %></p>
+                <p style="margin-bottom: 0.5rem;"><strong>Formato:</strong> <%= libro.formato %></p>
+                <p style="margin-bottom: 0.5rem;"><strong>Precio:</strong> <span style="color: #e74c3c; font-weight: bold; font-size: 1.2rem;">$<%= parseFloat(libro.precio).toFixed(2) %></span></p>
+                <p style="margin-bottom: 0.5rem;"><strong>Stock:</strong> <span style="color: <%= libro.stock > 0 ? '#27ae60' : '#e74c3c' %>; font-weight: bold;"><%= libro.stock %></span></p>
+            </div>
+
+            <% if (autores && autores.length > 0) { %>
+                <div style="margin-bottom: 1.5rem;">
+                    <strong>Autores:</strong>
+                    <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                        <% autores.forEach(autor => { %>
+                            <li><%= autor.nombre %> <%= autor.apellido %></li>
+                        <% }); %>
+                    </ul>
+                </div>
+            <% } %>
+
+            <% if (generos && generos.length > 0) { %>
+                <div style="margin-bottom: 1.5rem;">
+                    <strong>Géneros:</strong>
+                    <div style="margin-top: 0.5rem;">
+                        <% generos.forEach(genero => { %>
+                            <span style="background-color: #3498db; color: white; padding: 0.25rem 0.75rem; border-radius: 20px; margin-right: 0.5rem; display: inline-block; margin-bottom: 0.5rem;"><%= genero.nombre %></span>
+                        <% }); %>
+                    </div>
+                </div>
+            <% } %>
+
+            <% if (isAdmin) { %>
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <a href="/admin/libros/<%= libro.id_libro %>/editar" class="btn">✏️ Editar</a>
+                    <form method="POST" action="/admin/libros/<%= libro.id_libro %>/eliminar" onsubmit="return confirm('¿Estás seguro?');" style="flex: 1;">
+                        <button type="submit" class="btn btn-danger" style="width: 100%;">🗑️ Eliminar</button>
+                    </form>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+    <% if (libro.descripcion) { %>
+        <div style="margin-bottom: 2rem;">
+            <h3 style="color: #2c3e50; margin-bottom: 1rem;">Descripción</h3>
+            <p style="color: #555; line-height: 1.6; white-space: pre-wrap;"><%= libro.descripcion %></p>
+        </div>
+    <% } %>
+
+    <% if (conceptos && conceptos.length > 0) { %>
+        <div style="margin-bottom: 2rem;">
+            <h3 style="color: #2c3e50; margin-bottom: 1rem;">Conceptos Definidos</h3>
+            <div style="background: #f9f9f9; padding: 1rem; border-radius: 5px;">
+                <% conceptos.forEach(concepto => { %>
+                    <div style="margin-bottom: 1rem; border-bottom: 1px solid #eee; padding-bottom: 1rem;">
+                        <strong style="color: #2c3e50;"><%= concepto.termino %></strong>
+                        <p style="color: #555; margin-top: 0.5rem;"><%= concepto.definicion %></p>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+    <% } %>
+
+    <% if (imagenes && imagenes.length > 1) { %>
+        <div>
+            <h3 style="color: #2c3e50; margin-bottom: 1rem;">Galería</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem;">
+                <% imagenes.forEach(img => { %>
+                    <div style="background: #f5f5f5; padding: 0.5rem; border-radius: 5px;">
+                        <img src="/<%= img.ruta_archivo %>" alt="<%= libro.titulo %>" style="width: 100%; height: 150px; object-fit: cover; border-radius: 3px;">
+                        <% if (img.es_portada) { %>
+                            <span style="background-color: #e74c3c; color: white; padding: 0.25rem 0.5rem; border-radius: 3px; font-size: 0.8rem; display: inline-block; margin-top: 0.5rem;">Portada</span>
+                        <% } %>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+    <% } %>
+</div>

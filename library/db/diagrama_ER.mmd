@@ -1,0 +1,102 @@
+erDiagram
+    USUARIOS ||--o| USUARIOS : "max 1 admin"
+    LIBROS ||--|{ IMAGENES : "contiene"
+    LIBROS }o--|| FORMATOS : "tiene"
+    LIBROS }o--|| CATEGORIAS : "pertenece a"
+    LIBROS }o--|| CONCEPTOS : "define"
+    LIBROS }o--|| AUTORES : "escrito por"
+    AUTORES ||--o{ LIBROS : "escribe"
+    GENEROS ||--o{ LIBROS : "clasifica"
+    CONCEPTOS ||--o{ LIBROS : "aparece en"
+
+    USUARIOS {
+        uuid id_usuario PK
+        string nombre
+        string email UK
+        string contrasena_hash
+        boolean es_administrador
+        boolean activo
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    LIBROS {
+        uuid id_libro PK
+        string isbn UK
+        string titulo
+        integer year_publicacion
+        decimal precio
+        integer stock
+        integer id_formato FK
+        text descripcion
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    AUTORES {
+        integer id_autor PK
+        string nombre
+        string apellido
+        text biografia
+        date fecha_nacimiento
+        string nacionalidad
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    FORMATOS {
+        integer id_formato PK
+        string nombre UK
+        text descripcion
+        timestamp created_at
+    }
+
+    CATEGORIAS {
+        integer id_categoria PK
+        string nombre UK
+        text descripcion
+        timestamp created_at
+    }
+
+    GENEROS {
+        integer id_genero PK
+        string nombre UK
+        text descripcion
+        timestamp created_at
+    }
+
+    CONCEPTOS {
+        integer id_concepto PK
+        string termino UK
+        timestamp created_at
+    }
+
+    IMAGENES {
+        uuid id_imagen PK
+        uuid id_libro FK
+        string nombre_archivo
+        string ruta_archivo
+        string tipo_mime
+        bigint tamaño_bytes
+        boolean es_portada
+        integer orden
+        timestamp created_at
+    }
+
+    LIBROS_AUTORES {
+        uuid id_libro FK
+        integer id_autor FK
+        integer orden_autor
+    }
+
+    LIBROS_GENEROS {
+        uuid id_libro FK
+        integer id_genero FK
+    }
+
+    LIBROS_CONCEPTOS {
+        uuid id_libro FK
+        integer id_concepto FK
+        text definicion
+        timestamp created_at
+    }

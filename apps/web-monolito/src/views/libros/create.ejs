@@ -1,0 +1,50 @@
+<div style="max-width: 600px; margin: 0 auto; background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+    <form method="POST" action="/admin/libros/crear">
+        <div style="margin-bottom: 1.5rem;">
+            <label for="isbn" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">ISBN <span style="color: #e74c3c;">*</span></label>
+            <input type="text" id="isbn" name="isbn" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label for="titulo" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Título <span style="color: #e74c3c;">*</span></label>
+            <input type="text" id="titulo" name="titulo" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label for="year_publicacion" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Año de Publicación</label>
+            <input type="number" id="year_publicacion" name="year_publicacion" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label for="precio" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Precio <span style="color: #e74c3c;">*</span></label>
+            <input type="number" id="precio" name="precio" step="0.01" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label for="stock" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Stock <span style="color: #e74c3c;">*</span></label>
+            <input type="number" id="stock" name="stock" value="0" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label for="id_formato" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Formato <span style="color: #e74c3c;">*</span></label>
+            <select id="id_formato" name="id_formato" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
+                <option value="">Seleccionar formato...</option>
+                <% if (formatos) { %>
+                    <% formatos.forEach(formato => { %>
+                        <option value="<%= formato.id_formato %>"><%= formato.nombre %></option>
+                    <% }); %>
+                <% } %>
+            </select>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label for="descripcion" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Descripción</label>
+            <textarea id="descripcion" name="descripcion" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; min-height: 150px;"></textarea>
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+            <button type="submit" class="btn">Crear Libro</button>
+            <a href="/libros" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
