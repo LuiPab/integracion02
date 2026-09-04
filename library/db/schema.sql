@@ -3,8 +3,31 @@
 -- Sistema Web para Administración de Usuarios y Catálogo de Libros
 -- ============================================================================
 
--- Habilitar extensiones necesarias
-CREATE EXTENSION IF NOT EXISTS uuid-ossp;
+-- ============================================================================
+-- LIMPIEZA DE TABLAS EXISTENTES (Drop everything cleanly)
+-- ============================================================================
+
+-- Eliminar tablas asociativas primero (por dependencias de FK)
+DROP TABLE IF EXISTS libros_conceptos CASCADE;
+DROP TABLE IF EXISTS libros_generos CASCADE;
+DROP TABLE IF EXISTS libros_autores CASCADE;
+DROP TABLE IF EXISTS imagenes CASCADE;
+
+-- Eliminar tablas principales
+DROP TABLE IF EXISTS libros CASCADE;
+DROP TABLE IF EXISTS usuarios CASCADE;
+DROP TABLE IF EXISTS autores CASCADE;
+DROP TABLE IF EXISTS conceptos CASCADE;
+DROP TABLE IF EXISTS categorias CASCADE;
+DROP TABLE IF EXISTS generos CASCADE;
+DROP TABLE IF EXISTS formatos CASCADE;
+
+-- Eliminar funciones existentes
+DROP FUNCTION IF EXISTS actualizar_updated_at() CASCADE;
+DROP FUNCTION IF EXISTS validar_unico_administrador() CASCADE;
+
+-- Habilitar extensiones necesarias (CORREGIDA: UUID entre comillas)
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================================================
 -- TABLAS DE CATÁLOGOS (Referencia)
@@ -44,11 +67,8 @@ CREATE TABLE IF NOT EXISTS usuarios (
     es_administrador BOOLEAN DEFAULT FALSE,
     activo BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT unico_administrador CHECK (
-        NOT (es_administrador = TRUE AND 
-            EXISTS (SELECT 1 FROM usuarios WHERE es_administrador = TRUE AND id_usuario != usuarios.id_usuario))
-    )
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    -- CORRECCIÓN 1: Se eliminó el CONSTRAINT CHECK con subconsulta (se maneja con Trigger más abajo)
 );
 
 -- ============================================================================
@@ -63,7 +83,8 @@ CREATE TABLE IF NOT EXISTS autores (
     fecha_nacimiento DATE,
     nacionalidad VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (nombre, apellido) -- CORRECCIÓN 2: Se agregó UNIQUE para que funcione el ON CONFLICT
 );
 
 -- ============================================================================
@@ -150,8 +171,7 @@ CREATE TABLE IF NOT EXISTS imagenes (
     es_portada BOOLEAN DEFAULT FALSE,
     orden INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_libro) REFERENCES libros(id_libro) ON DELETE CASCADE,
-    CONSTRAINT una_portada_por_libro UNIQUE (id_libro, es_portada) WHERE es_portada = TRUE
+    FOREIGN KEY (id_libro) REFERENCES libros(id_libro) ON DELETE CASCADE
 );
 
 -- ============================================================================
@@ -178,6 +198,9 @@ CREATE INDEX idx_libros_conceptos_concepto ON libros_conceptos(id_concepto);
 -- Índices en tabla de imágenes
 CREATE INDEX idx_imagenes_libro ON imagenes(id_libro);
 CREATE INDEX idx_imagenes_portada ON imagenes(id_libro, es_portada);
+
+-- CORREGIDO: Índice independiente para una portada por libro
+CREATE UNIQUE INDEX idx_una_portada_por_libro ON imagenes (id_libro) WHERE es_portada = true;
 
 -- ============================================================================
 -- VISTAS ÚTILES
@@ -270,51 +293,194 @@ FOR EACH ROW
 EXECUTE FUNCTION validar_unico_administrador();
 
 -- ============================================================================
--- DATOS INICIALES
+-- DATOS INICIALES - CATÁLOGOS
 -- ============================================================================
 
 -- Insertar formatos iniciales
 INSERT INTO formatos (nombre, descripcion) VALUES
-    ('Tapa Dura', 'Libro encuadernado en tapa dura'),
-    ('Tapa Blanda', 'Libro encuadernado en tapa blanda'),
-    ('Ebook', 'Libro en formato digital'),
-    ('Audiolibro', 'Libro en formato de audio')
+    ('Tapa Dura', 'Libro encuadernado en tapa dura con calidad premium'),
+    ('Tapa Blanda', 'Libro encuadernado en tapa blanda, portátil y económico'),
+    ('Ebook', 'Libro en formato digital para lectores electrónicos'),
+    ('Audiolibro', 'Libro en formato de audio narrado profesionalmente')
 ON CONFLICT (nombre) DO NOTHING;
 
 -- Insertar géneros iniciales
 INSERT INTO generos (nombre, descripcion) VALUES
-    ('Ficción', 'Obras de narrativa de ficción'),
-    ('No Ficción', 'Obras basadas en hechos reales'),
-    ('Ciencia Ficción', 'Obras de ciencia ficción'),
-    ('Fantasía', 'Obras de fantasía'),
-    ('Misterio', 'Novelas de misterio y suspenso'),
-    ('Romance', 'Novelas románticas'),
-    ('Educativo', 'Libros educativos y académicos'),
-    ('Infantil', 'Libros para niños'),
-    ('Autoayuda', 'Libros de autoayuda y desarrollo personal'),
-    ('Técnico', 'Libros técnicos y especializados')
+    ('Ficción', 'Obras de narrativa de ficción contemporánea'),
+    ('Ciencia Ficción', 'Novelas de ciencia ficción y futuros alternativos'),
+    ('Misterio', 'Novelas de misterio, suspenso y crimen'),
+    ('Fantasía', 'Obras de fantasía, magia y mundos imaginarios'),
+    ('Romance', 'Novelas románticas y de relaciones personales'),
+    ('No Ficción', 'Obras basadas en hechos reales e investigación'),
+    ('Histórico', 'Novelas históricas y de época'),
+    ('Infantil', 'Libros para niños y jóvenes lectores')
 ON CONFLICT (nombre) DO NOTHING;
 
 -- Insertar categorías iniciales
 INSERT INTO categorias (nombre, descripcion) VALUES
-    ('Best Seller', 'Libros más vendidos'),
-    ('Clásicos', 'Clásicos de la literatura'),
+    ('Best Seller', 'Libros más vendidos y populares'),
+    ('Clásicos', 'Clásicos de la literatura mundial'),
     ('Nuevas Publicaciones', 'Lanzamientos recientes'),
-    ('Ofertas', 'Libros en promoción')
+    ('Ofertas', 'Libros en promoción especial')
 ON CONFLICT (nombre) DO NOTHING;
 
 -- ============================================================================
--- COMENTARIOS Y DOCUMENTACIÓN
+-- DATOS DE PRUEBA - USUARIOS (3 usuarios)
 -- ============================================================================
 
-COMMENT ON TABLE libros IS 'Tabla principal que almacena la información de libros del catálogo';
-COMMENT ON TABLE libros_autores IS 'Tabla asociativa que relaciona libros con autores (relación N:N)';
-COMMENT ON TABLE libros_generos IS 'Tabla asociativa que relaciona libros con géneros (relación N:N)';
-COMMENT ON TABLE libros_conceptos IS 'Tabla asociativa que almacena conceptos definidos en cada libro con definiciones específicas por libro (relación N:N)';
-COMMENT ON TABLE imagenes IS 'Tabla que almacena referencias a imágenes de libros';
-COMMENT ON TABLE usuarios IS 'Tabla que almacena usuarios del sistema, con máximo un administrador';
-COMMENT ON TABLE conceptos IS 'Tabla de catálogo de conceptos o términos utilizados en libros';
+INSERT INTO usuarios (nombre, email, contraseña_hash, es_administrador, activo) VALUES
+    ('Carlos Administrador', 'admin@libreria.com', '$2a$10$qSvgoHWbHrj6g9lZ8.xA6OmNXy6r5vY8k2p1m0n9o8l7k6j5i4h3', true, true),
+    ('María Editora', 'editor@libreria.com', '$2a$10$fG9vH8iJ7kL6mN5oP4qR3sT2uV1wX0yZ9aB8cD7eF6gH5iJ4kL3m', false, true),
+    ('Juan Lector', 'lector@libreria.com', '$2a$10$pL2mK1jI0hG9fE8dC7bA6yZ5xW4vU3tS2rQ1pO0nM9lK8jI7hG6f', false, true)
+ON CONFLICT (email) DO NOTHING;
 
 -- ============================================================================
--- FIN DEL SCHEMA
+-- DATOS DE PRUEBA - AUTORES (4 autores)
 -- ============================================================================
+
+INSERT INTO autores (nombre, apellido, biografia, fecha_nacimiento, nacionalidad) VALUES
+    ('Gabriel', 'García Márquez', 'Novelista colombiano y ganador del Premio Nobel de Literatura. Autor de "Cien años de soledad".', '1927-03-06', 'Colombiana'),
+    ('J.K.', 'Rowling', 'Autora británica famosa por la serie Harry Potter que revolucionó la literatura infantil y juvenil.', '1965-07-31', 'Británica'),
+    ('Haruki', 'Murakami', 'Novelista japonés contemporáneo conocido por su estilo surreal y existencial en la ficción.', '1949-01-12', 'Japonesa'),
+    ('Agatha', 'Christie', 'Autora británica de misterio y crimen, creadora del detective Hércules Poirot.', '1890-01-15', 'Británica')
+ON CONFLICT (nombre, apellido) DO NOTHING;
+
+-- ============================================================================
+-- DATOS DE PRUEBA - CONCEPTOS (12 conceptos)
+-- ============================================================================
+
+INSERT INTO conceptos (termino) VALUES
+    ('Realismo Mágico'),
+    ('Magia'),
+    ('Detectives Privados'),
+    ('Mundos Paralelos'),
+    ('Misterio Psicológico'),
+    ('Aprendizaje Mágico'),
+    ('Crimen Clásico'),
+    ('Surrealismo'),
+    ('Familia Disfuncional'),
+    ('Viajes en el Tiempo'),
+    ('Intriga Política'),
+    ('Encuentros Paranormales')
+ON CONFLICT (termino) DO NOTHING;
+
+-- ============================================================================
+-- DATOS DE PRUEBA - LIBROS (12 libros completos)
+-- ============================================================================
+
+INSERT INTO libros (isbn, titulo, year_publicacion, precio, stock, id_formato, descripcion) VALUES
+    ('978-8439708032', 'Cien años de soledad', 1967, 32.50, 15, 1, 'Novela magistral de Gabriel García Márquez que narra la historia de la familia Buendía en el pueblo ficticio de Macondo. Una obra maestra del realismo mágico que ha influenciado a generaciones de lectores. La novela explora temas de amor, soledad, muerte y el ciclo inevitable de la historia humana.')
+ON CONFLICT (isbn) DO NOTHING;
+
+INSERT INTO libros (isbn, titulo, year_publicacion, precio, stock, id_formato, descripcion) VALUES
+    ('978-8498384956', 'Harry Potter y la Piedra Filosofal', 1997, 18.90, 25, 2, 'El primer libro de la serie Harry Potter de J.K. Rowling. Narra el descubrimiento de Harry de que es un mago y su entrada a la Escuela Hogwarts. Una aventura llena de magia, amistad y misterio que cautivó a millones de lectores en todo el mundo.')
+ON CONFLICT (isbn) DO NOTHING;
+
+INSERT INTO libros (isbn, titulo, year_publicacion, precio, stock, id_formato, descripcion) VALUES
+    ('978-8432217388', 'Kafka en la orilla', 2002, 22.00, 12, 1, 'Novela de Haruki Murakami que sigue a dos protagonistas: un adolescente que huye de su casa y un anciano sordo. Una obra surrealista que explora temas de identidad, soledad y la búsqueda de significado en la vida moderna.')
+ON CONFLICT (isbn) DO NOTHING;
+
+INSERT INTO libros (isbn, titulo, year_publicacion, precio, stock, id_formato, descripcion) VALUES
+    ('978-8427033528', 'Asesinato en el Expreso de Oriente', 1934, 15.99, 18, 2, 'Clásica novela de misterio de Agatha Christie. El detective Hércules Poirot debe resolver un asesinato cometido en un tren de lujo atrapado en la nieve. Una intriga magistral con giros sorprendentes.')
+ON CONFLICT (isbn) DO NOTHING;
+
+INSERT INTO libros (isbn, titulo, year_publicacion, precio, stock, id_formato, descripcion) VALUES
+    ('978-8434403689', 'El amor en los tiempos del cólera', 1985, 28.50, 10, 1, 'Novela de Gabriel García Márquez que narra la historia de amor entre Florentino Ariza y Fermina Daza a lo largo de más de 50 años. Una profunda exploración del amor, la paciencia y la redención.')
+ON CONFLICT (isbn) DO NOTHING;
+
+INSERT INTO libros (isbn, titulo, year_publicacion, precio, stock, id_formato, descripcion) VALUES
+    ('978-8498386929', 'Harry Potter y la Cámara Secreta', 1998, 19.50, 22, 2, 'Segundo libro de la serie Harry Potter. Harry regresa a Hogwarts para enfrentarse a nuevos misterios y descubrir los secretos ocultos de la escuela. La serie continúa con más intriga y desarrollo de personajes.')
+ON CONFLICT (isbn) DO NOTHING;
+
+INSERT INTO libros (isbn, titulo, year_publicacion, precio, stock, id_formato, descripcion) VALUES
+    ('978-8432213779', 'Tokio Blues', 1987, 20.00, 14, 2, 'Novela de Haruki Murakami ambientada en Tokio durante los años 60. Historia de amor y nostalgia con la música de The Beatles como trasfondo. Una reflexión melancólica sobre la juventud, la pérdida y la conexión humana.')
+ON CONFLICT (isbn) DO NOTHING;
+
+INSERT INTO libros (isbn, titulo, year_publicacion, precio, stock, id_formato, descripcion) VALUES
+    ('978-8427038790', 'Muerte en el Nilo', 1937, 17.99, 16, 1, 'Otro clásico de misterio de Agatha Christie. Hércules Poirot investiga un asesinato en un crucero por el Nilo. Intriga, pasión y crimen se entrelazan en esta novela cautivadora.')
+ON CONFLICT (isbn) DO NOTHING;
+
+INSERT INTO libros (isbn, titulo, year_publicacion, precio, stock, id_formato, descripcion) VALUES
+    ('978-8439706679', 'Memoria de mis putas tristes', 2004, 25.00, 8, 1, 'Novela de Gabriel García Márquez. La historia de un anciano de 90 años que decide vivir una última aventura. Una reflexión íntima sobre la vejez, la soledad, el amor y la vitalidad.')
+ON CONFLICT (isbn) DO NOTHING;
+
+INSERT INTO libros (isbn, titulo, year_publicacion, precio, stock, id_formato, descripcion) VALUES
+    ('978-8498388275', 'Harry Potter y el Prisionero de Azkaban', 1999, 20.00, 20, 2, 'Tercer libro de Harry Potter. Se introduce la complejidad de la trama con la fuga de un prisionero de la prisión mágica de Azkaban. Los misterios se profundizan y los personajes evolucionan.')
+ON CONFLICT (isbn) DO NOTHING;
+
+INSERT INTO libros (isbn, titulo, year_publicacion, precio, stock, id_formato, descripcion) VALUES
+    ('978-8432218393', 'La tierra de los espíritus', 2010, 26.50, 9, 1, 'Novela contemporánea de misterio y aventura. Una exploración de culturas ancestrales y encuentros sobrenaturales. Combina elementos de realismo mágico con intriga moderna.')
+ON CONFLICT (isbn) DO NOTHING;
+
+INSERT INTO libros (isbn, titulo, year_publicacion, precio, stock, id_formato, descripcion) VALUES
+    ('978-8427044102', 'Testimonio de sangre', 1952, 19.99, 11, 2, 'Novela de misterio clásico con tintes de drama psicológico. Una investigación profunda sobre un crimen que revela secretos oscuros de una familia. Intriga, suspense y giros inesperados.')
+ON CONFLICT (isbn) DO NOTHING;
+
+-- ============================================================================
+-- DATOS DE PRUEBA - RELACIONES LIBROS-AUTORES
+-- ============================================================================
+
+INSERT INTO libros_autores (id_libro, id_autor, orden_autor) SELECT id_libro, 1, 1 FROM libros WHERE titulo = 'Cien años de soledad' LIMIT 1;
+INSERT INTO libros_autores (id_libro, id_autor, orden_autor) SELECT id_libro, 2, 1 FROM libros WHERE titulo = 'Harry Potter y la Piedra Filosofal' LIMIT 1;
+INSERT INTO libros_autores (id_libro, id_autor, orden_autor) SELECT id_libro, 3, 1 FROM libros WHERE titulo = 'Kafka en la orilla' LIMIT 1;
+INSERT INTO libros_autores (id_libro, id_autor, orden_autor) SELECT id_libro, 4, 1 FROM libros WHERE titulo = 'Asesinato en el Expreso de Oriente' LIMIT 1;
+INSERT INTO libros_autores (id_libro, id_autor, orden_autor) SELECT id_libro, 1, 1 FROM libros WHERE titulo = 'El amor en los tiempos del cólera' LIMIT 1;
+INSERT INTO libros_autores (id_libro, id_autor, orden_autor) SELECT id_libro, 2, 1 FROM libros WHERE titulo = 'Harry Potter y la Cámara Secreta' LIMIT 1;
+INSERT INTO libros_autores (id_libro, id_autor, orden_autor) SELECT id_libro, 3, 1 FROM libros WHERE titulo = 'Tokio Blues' LIMIT 1;
+INSERT INTO libros_autores (id_libro, id_autor, orden_autor) SELECT id_libro, 4, 1 FROM libros WHERE titulo = 'Muerte en el Nilo' LIMIT 1;
+INSERT INTO libros_autores (id_libro, id_autor, orden_autor) SELECT id_libro, 1, 1 FROM libros WHERE titulo = 'Memoria de mis putas tristes' LIMIT 1;
+INSERT INTO libros_autores (id_libro, id_autor, orden_autor) SELECT id_libro, 2, 1 FROM libros WHERE titulo = 'Harry Potter y el Prisionero de Azkaban' LIMIT 1;
+INSERT INTO libros_autores (id_libro, id_autor, orden_autor) SELECT id_libro, 3, 1 FROM libros WHERE titulo = 'La tierra de los espíritus' LIMIT 1;
+INSERT INTO libros_autores (id_libro, id_autor, orden_autor) SELECT id_libro, 4, 1 FROM libros WHERE titulo = 'Testimonio de sangre' LIMIT 1;
+
+-- ============================================================================
+-- DATOS DE PRUEBA - RELACIONES LIBROS-GÉNEROS
+-- ============================================================================
+
+INSERT INTO libros_generos (id_libro, id_genero) SELECT id_libro, 1 FROM libros WHERE titulo = 'Cien años de soledad' UNION ALL SELECT id_libro, 7 FROM libros WHERE titulo = 'Cien años de soledad';
+INSERT INTO libros_generos (id_libro, id_genero) SELECT id_libro, 4 FROM libros WHERE titulo = 'Harry Potter y la Piedra Filosofal' UNION ALL SELECT id_libro, 8 FROM libros WHERE titulo = 'Harry Potter y la Piedra Filosofal';
+INSERT INTO libros_generos (id_libro, id_genero) SELECT id_libro, 2 FROM libros WHERE titulo = 'Kafka en la orilla' UNION ALL SELECT id_libro, 1 FROM libros WHERE titulo = 'Kafka en la orilla';
+INSERT INTO libros_generos (id_libro, id_genero) SELECT id_libro, 3 FROM libros WHERE titulo = 'Asesinato en el Expreso de Oriente';
+INSERT INTO libros_generos (id_libro, id_genero) SELECT id_libro, 5 FROM libros WHERE titulo = 'El amor en los tiempos del cólera' UNION ALL SELECT id_libro, 7 FROM libros WHERE titulo = 'El amor en los tiempos del cólera' UNION ALL SELECT id_libro, 1 FROM libros WHERE titulo = 'El amor en los tiempos del cólera';
+INSERT INTO libros_generos (id_libro, id_genero) SELECT id_libro, 4 FROM libros WHERE titulo = 'Harry Potter y la Cámara Secreta' UNION ALL SELECT id_libro, 8 FROM libros WHERE titulo = 'Harry Potter y la Cámara Secreta' UNION ALL SELECT id_libro, 3 FROM libros WHERE titulo = 'Harry Potter y la Cámara Secreta';
+INSERT INTO libros_generos (id_libro, id_genero) SELECT id_libro, 1 FROM libros WHERE titulo = 'Tokio Blues' UNION ALL SELECT id_libro, 5 FROM libros WHERE titulo = 'Tokio Blues' UNION ALL SELECT id_libro, 7 FROM libros WHERE titulo = 'Tokio Blues';
+INSERT INTO libros_generos (id_libro, id_genero) SELECT id_libro, 3 FROM libros WHERE titulo = 'Muerte en el Nilo' UNION ALL SELECT id_libro, 7 FROM libros WHERE titulo = 'Muerte en el Nilo';
+INSERT INTO libros_generos (id_libro, id_genero) SELECT id_libro, 1 FROM libros WHERE titulo = 'Memoria de mis putas tristes' UNION ALL SELECT id_libro, 5 FROM libros WHERE titulo = 'Memoria de mis putas tristes';
+INSERT INTO libros_generos (id_libro, id_genero) SELECT id_libro, 4 FROM libros WHERE titulo = 'Harry Potter y el Prisionero de Azkaban' UNION ALL SELECT id_libro, 8 FROM libros WHERE titulo = 'Harry Potter y el Prisionero de Azkaban' UNION ALL SELECT id_libro, 3 FROM libros WHERE titulo = 'Harry Potter y el Prisionero de Azkaban';
+INSERT INTO libros_generos (id_libro, id_genero) SELECT id_libro, 2 FROM libros WHERE titulo = 'La tierra de los espíritus' UNION ALL SELECT id_libro, 3 FROM libros WHERE titulo = 'La tierra de los espíritus';
+INSERT INTO libros_generos (id_libro, id_genero) SELECT id_libro, 3 FROM libros WHERE titulo = 'Testimonio de sangre' UNION ALL SELECT id_libro, 1 FROM libros WHERE titulo = 'Testimonio de sangre';
+
+-- ============================================================================
+-- DATOS DE PRUEBA - RELACIONES LIBROS-CONCEPTOS
+-- ============================================================================
+
+INSERT INTO libros_conceptos (id_libro, id_concepto, definicion) SELECT id_libro, 1, 'La magía y lo fantástico se entrelazan de forma natural con la realidad cotidiana de Macondo, creando una atmósfera onírica y surreal.' FROM libros WHERE titulo = 'Cien años de soledad';
+INSERT INTO libros_conceptos (id_libro, id_concepto, definicion) SELECT id_libro, 9, 'La familia Buendía está marcada por patrones de comportamiento repetitivo y disfunción generacional que se perpetúa a través de los años.' FROM libros WHERE titulo = 'Cien años de soledad';
+INSERT INTO libros_conceptos (id_libro, id_concepto, definicion) SELECT id_libro, 2, 'Harry descubre el mundo de la magia y debe aprender a controlar sus poderes mágicos mientras enfrenta fuerzas oscuras.' FROM libros WHERE titulo = 'Harry Potter y la Piedra Filosofal';
+INSERT INTO libros_conceptos (id_libro, id_concepto, definicion) SELECT id_libro, 6, 'Hogwarts es una escuela de aprendizaje mágico donde los jóvenes brujos desarrollan habilidades y enfrentan pruebas de madurez.' FROM libros WHERE titulo = 'Harry Potter y la Piedra Filosofal';
+INSERT INTO libros_conceptos (id_libro, id_concepto, definicion) SELECT id_libro, 8, 'La novela utiliza elementos surreales y oníricos para explorar la mente del protagonista y su percepción de la realidad.' FROM libros WHERE titulo = 'Kafka en la orilla';
+INSERT INTO libros_conceptos (id_libro, id_concepto, definicion) SELECT id_libro, 4, 'Kafka experimenta encuentros con mundos paralelos y realidades alternativas que desafían su comprensión del universo.' FROM libros WHERE titulo = 'Kafka en la orilla';
+INSERT INTO libros_conceptos (id_libro, id_concepto, definicion) SELECT id_libro, 3, 'Hércules Poirot, el famoso detective privado, debe utilizar su ingenio y psicología para resolver el crimen en el tren.' FROM libros WHERE titulo = 'Asesinato en el Expreso de Oriente';
+INSERT INTO libros_conceptos (id_libro, id_concepto, definicion) SELECT id_libro, 7, 'Un asesinato en el Expreso de Oriente presenta un complejo crimen clásico con múltiples sospechosos y secretos oscuros.' FROM libros WHERE titulo = 'Asesinato en el Expreso de Oriente';
+INSERT INTO libros_conceptos (id_libro, id_concepto, definicion) SELECT id_libro, 9, 'Las familias de Fermina y Florentino están marcadas por conflictos emocionales y expectativas sociales que separan a los amantes.' FROM libros WHERE titulo = 'El amor en los tiempos del cólera';
+INSERT INTO libros_conceptos (id_libro, id_concepto, definicion) SELECT id_libro, 1, 'La novela presenta elementos de realismo mágico aunque en un contexto más realista, con momentos de profunda introspección emocional.' FROM libros WHERE titulo = 'Tokio Blues';
+INSERT INTO libros_conceptos (id_libro, id_concepto, definicion) SELECT id_libro, 5, 'El misterio psicológico detrás del crimen en el Nilo revela motivaciones complejas y secretos familiares enterrados.' FROM libros WHERE titulo = 'Muerte en el Nilo';
+INSERT INTO libros_conceptos (id_libro, id_concepto, definicion) SELECT id_libro, 12, 'Encuentros paranormales con espíritus ancestrales que revelan verdades sobre el pasado y el presente de los personajes.' FROM libros WHERE titulo = 'La tierra de los espíritus';
+INSERT INTO libros_conceptos (id_libro, id_concepto, definicion) SELECT id_libro, 5, 'El análisis psicológico de los personajes revela misterios emocionales profundos detrás del crimen aparente.' FROM libros WHERE titulo = 'Testimonio de sangre';
+
+-- ============================================================================
+-- DATOS DE PRUEBA - IMÁGENES (12 portadas de libros)
+-- ============================================================================
+
+INSERT INTO imagenes (id_libro, nombre_archivo, ruta_archivo, tipo_mime, tamaño_bytes, es_portada, orden) SELECT id_libro, 'cien-anos-portada.jpg', 'images/covers/cien-anos-portada.jpg', 'image/jpeg', 245000, true, 1 FROM libros WHERE titulo = 'Cien años de soledad' LIMIT 1;
+INSERT INTO imagenes (id_libro, nombre_archivo, ruta_archivo, tipo_mime, tamaño_bytes, es_portada, orden) SELECT id_libro, 'harry-potter-1-portada.jpg', 'images/covers/harry-potter-1-portada.jpg', 'image/jpeg', 198000, true, 1 FROM libros WHERE titulo = 'Harry Potter y la Piedra Filosofal' LIMIT 1;
+INSERT INTO imagenes (id_libro, nombre_archivo, ruta_archivo, tipo_mime, tamaño_bytes, es_portada, orden) SELECT id_libro, 'kafka-orilla-portada.jpg', 'images/covers/kafka-orilla-portada.jpg', 'image/jpeg', 267000, true, 1 FROM libros WHERE titulo = 'Kafka en la orilla' LIMIT 1;
+INSERT INTO imagenes (id_libro, nombre_archivo, ruta_archivo, tipo_mime, tamaño_bytes, es_portada, orden) SELECT id_libro, 'asesinato-expreso-portada.jpg', 'images/covers/asesinato-expreso-portada.jpg', 'image/jpeg', 182000, true, 1 FROM libros WHERE titulo = 'Asesinato en el Expreso de Oriente' LIMIT 1;
+INSERT INTO imagenes (id_libro, nombre_archivo, ruta_archivo, tipo_mime, tamaño_bytes, es_portada, orden) SELECT id_libro, 'amor-tiempos-colera-portada.jpg', 'images/covers/amor-tiempos-colera-portada.jpg', 'image/jpeg', 256000, true, 1 FROM libros WHERE titulo = 'El amor en los tiempos del cólera' LIMIT 1;
+INSERT INTO imagenes (id_libro, nombre_archivo, ruta_archivo, tipo_mime, tamaño_bytes, es_portada, orden) SELECT id_libro, 'harry-potter-2-portada.jpg', 'images/covers/harry-potter-2-portada.jpg', 'image/jpeg', 201000, true, 1 FROM libros WHERE titulo = 'Harry Potter y la Cámara Secreta' LIMIT 1;
+INSERT INTO imagenes (id_libro, nombre_archivo, ruta_archivo, tipo_mime, tamaño_bytes, es_portada, orden) SELECT id_libro, 'tokio-blues-portada.jpg', 'images/covers/tokio-blues-portada.jpg', 'image/jpeg', 223000, true, 1 FROM libros WHERE titulo = 'Tokio Blues' LIMIT 1;
+INSERT INTO imagenes (id_libro, nombre_archivo, ruta_archivo, tipo_mime, tamaño_bytes, es_portada, orden) SELECT id_libro, 'muerte-nilo-portada.jpg', 'images/covers/muerte-nilo-portada.jpg', 'image/jpeg', 187000, true, 1 FROM libros WHERE titulo = 'Muerte en el Nilo' LIMIT 1;
+INSERT INTO imagenes (id_libro, nombre_archivo, ruta_archivo, tipo_mime, tamaño_bytes, es_portada, orden) SELECT id_libro, 'memoria-putas-tristes-portada.jpg', 'images/covers/memoria-putas-tristes-portada.jpg', 'image/jpeg', 234000, true, 1 FROM libros WHERE titulo = 'Memoria de mis putas tristes' LIMIT 1;
+INSERT INTO imagenes (id_libro, nombre_archivo, ruta_archivo, tipo_mime, tamaño_bytes, es_portada, orden) SELECT id_libro, 'harry-potter-3-portada.jpg', 'images/covers/harry-potter-3-portada.jpg', 'image/jpeg', 209000, true, 1 FROM libros WHERE titulo = 'Harry Potter y el Prisionero de Azkaban' LIMIT 1;
+INSERT INTO imagenes (id_libro, nombre_archivo, ruta_archivo, tipo_mime, tamaño_bytes, es_portada, orden) SELECT id_libro, 'tierra-espiritus-portada.jpg', 'images/covers/tierra-espiritus-portada.jpg', 'image/jpeg', 278000, true, 1 FROM libros WHERE titulo = 'La tierra de los espíritus' LIMIT 1;
+INSERT INTO imagenes (id_libro, nombre_archivo, ruta_archivo, tipo_mime, tamaño_bytes, es_portada, orden) SELECT id_libro, 'testimonio-sangre-portada.jpg', 'images/covers/testimonio-sangre-portada.jpg', 'image/jpeg', 215000, true, 1 FROM libros WHERE titulo = 'Testimonio de sangre' LIMIT 1;

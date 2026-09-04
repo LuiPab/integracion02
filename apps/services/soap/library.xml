@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="library.xsl" type="text/xsl"?>
+<library>
+  <catalog>
+    <books>
+      <book>
+        <isbn>978-8439708032</isbn>
+        <title>Cien años de soledad</title>
+        <author>Gabriel García Márquez</author>
+        <publicationYear>1967</publicationYear>
+        <genres>
+          <genre>Fiction</genre>
+          <genre>Historical</genre>
+        </genres>
+        <price>32.50</price>
+        <stock>15</stock>
+        <format>Hardcover</format>
+        <images>
+          <image><path>https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&amp;fit=crop&amp;w=900&amp;q=80</path></image>
+        </images>
+        <concepts>
+          <concept><term>Realismo Mágico</term><definition>Magic and fantasy blend naturally with daily life in Macondo.</definition></concept>
+          <concept><term>Familia Disfuncional</term><definition>The Buendía family is shaped by recurring cycles and inherited dysfunction.</definition></concept>
+        </concepts>
+      </book>
+
+      <book>
+        <isbn>978-8498384956</isbn>
+        <title>Harry Potter y la Piedra Filosofal</title>
+        <author>J.K. Rowling</author>
+        <publicationYear>1997</publicationYear>
+        <genres>
+          <genre>Fantasy</genre>
+          <genre>Children</genre>
+        </genres>
+        <price>18.90</price>
+        <stock>25</stock>
+        <format>Paperback</format>
+        <images>
+          <image><path>https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&amp;fit=crop&amp;w=900&amp;q=80</path></image>
+        </images>
+        <concepts>
+          <concept><term>Magic</term><definition>Harry discovers the magical world and faces the forces of darkness.</definition></concept>
+          <concept><term>Magical Learning</term><definition>Hogwarts becomes the setting for growth, courage, and identity.</definition></concept>
+        </concepts>
+      </book>
+
+      <book>
+        <isbn>978-8432217388</isbn>
+        <title>Kafka en la orilla</title>
+        <author>Haruki Murakami</author>
+        <publicationYear>2002</publicationYear>
+        <genres>
+          <genre>Fiction</genre>
+          <genre>Science Fiction</genre>
+        </genres>
+        <price>22.00</price>
+        <stock>12</stock>
+        <format>Hardcover</format>
+        <images>
+          <image><path>https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&amp;fit=crop&amp;w=900&amp;q=80</path></image>
+        </images>
+        <concepts>
+          <concept><term>Surrealism</term><definition>The novel explores identity and reality through dreamlike scenes.</definition></concept>
+          <concept><term>Parallel Worlds</term><definition>Alternative realities challenge the protagonist’s understanding of life.</definition></concept>
+        </concepts>
+      </book>
+
+      <book>
+        <isbn>978-8427033528</isbn>
+        <title>Asesinato en el Expreso de Oriente</title>
+        <author>Agatha Christie</author>
+        <publicationYear>1934</publicationYear>
+        <genres>
+          <genre>Mystery</genre>
+        </genres>
+        <price>15.99</price>
+        <stock>18</stock>
+        <format>Paperback</format>
+        <images>
+          <image><path>https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&amp;fit=crop&amp;w=900&amp;q=80</path></image>
+        </images>
+        <concepts>
+          <concept><term>Private Detectives</term><definition>Poirot solves a murder among passengers locked in transit.</definition></concept>
+          <concept><term>Classic Crime</term><definition>A complex puzzle built around suspicion, secrets, and motive.</definition></concept>
+        </concepts>
+      </book>
+
+      <book>
+        <isbn>978-8434403689</isbn>
+        <title>El amor en los tiempos del cólera</title>
+        <author>Gabriel García Márquez</author>
+        <publicationYear>1985</publicationYear>
+        <genres>
+          <genre>Romance</genre>
+          <genre>Historical</genre>
+        </genres>
+        <price>28.50</price>
+        <stock>10</stock>
+        <format>Hardcover</format>
+        <images>
+          <image><path>https://images.unsplash.com/photo-1524578271613-d550eacf6090?auto=format&amp;fit=crop&amp;w=900&amp;q=80</path></image>
+        </images>
+        <concepts>
+          <concept><term>Love and Redemption</term><definition>Long-lasting love is tested by time, memory, and social expectation.</definition></concept>
+          <concept><term>Magical Realism</term><definition>Emotional truth is presented within a rich, lyrical landscape.</definition></concept>
+        </concepts>
+      </book>
+
+      <book>
+        <isbn>978-8498386929</isbn>
+        <title>Harry Potter y la Cámara Secreta</title>
+        <author>J.K. Rowling</author>
+        <publicationYear>1998</publicationYear>
+        <genres>
+          <genre>Fantasy</genre>
+          <genre>Children</genre>
+          <genre>Mystery</genre>
+        </genres>
+        <price>19.50</price>
+        <stock>22</stock>
+        <format>Paperback</format>
+        <images>
+          <image><path>https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&amp;fit=crop&amp;w=900&amp;q=80</path></image>
+        </images>
+        <concepts>
+          <concept><term>Magic</term><definition>Harry returns to Hogwarts to unravel the school’s deepest secrets.</definition></concept>
+          <concept><term>Magical Learning</term><definition>Friendship and courage are tested through hidden danger and mystery.</definition></concept>
+        </concepts>
+      </book>
+
+      <book>
+        <isbn>978-8432213779</isbn>
+        <title>Tokio Blues</title>
+        <author>Haruki Murakami</author>
+        <publicationYear>1987</publicationYear>
+        <genres>
+          <genre>Fiction</genre>
+          <genre>Romance</genre>
+        </genres>
+        <price>20.00</price>
+        <stock>14</stock>
+        <format>Paperback</format>
+        <images>
+          <image><path>https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&amp;fit=crop&amp;w=900&amp;q=80</path></image>
+        </images>
+        <concepts>
+          <concept><term>Melancholy</term><definition>A nostalgic reflection on youth, sorrow, and human connection.</definition></concept>
+          <concept><term>Emotional Introspection</term><definition>The story explores loneliness through everyday experiences and memory.</definition></concept>
+        </concepts>
+      </book>
+
+      <book>
+        <isbn>978-8427038790</isbn>
+        <title>Muerte en el Nilo</title>
+        <author>Agatha Christie</author>
+        <publicationYear>1937</publicationYear>
+        <genres>
+          <genre>Mystery</genre>
+          <genre>Historical</genre>
+        </genres>
+        <price>17.99</price>
+        <stock>16</stock>
+        <format>Hardcover</format>
+        <images>
+          <image><path>https://images.unsplash.com/photo-1526243741027-444d633d7365?auto=format&amp;fit=crop&amp;w=900&amp;q=80</path></image>
+        </images>
+        <concepts>
+          <concept><term>Psychological Mystery</term><definition>The crime reveals hidden motives and family tensions.</definition></concept>
+          <concept><term>Classic Crime</term><definition>A murder on the Nile mixes passion, suspicion, and deduction.</definition></concept>
+        </concepts>
+      </book>
+
+      <book>
+        <isbn>978-8439706679</isbn>
+        <title>Memoria de mis putas tristes</title>
+        <author>Gabriel García Márquez</author>
+        <publicationYear>2004</publicationYear>
+        <genres>
+          <genre>Fiction</genre>
+          <genre>Romance</genre>
+        </genres>
+        <price>25.00</price>
+        <stock>8</stock>
+        <format>Hardcover</format>
+        <images>
+          <image><path>https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&amp;fit=crop&amp;w=900&amp;q=80</path></image>
+        </images>
+        <concepts>
+          <concept><term>Memory</term><definition>A late-life reflection on desire, aging, and emotional truth.</definition></concept>
+          <concept><term>Poetic Narrative</term><definition>The novel blends intimacy with a deeply lyrical perspective.</definition></concept>
+        </concepts>
+      </book>
+
+      <book>
+        <isbn>978-8498388275</isbn>
+        <title>Harry Potter y el Prisionero de Azkaban</title>
+        <author>J.K. Rowling</author>
+        <publicationYear>1999</publicationYear>
+        <genres>
+          <genre>Fantasy</genre>
+          <genre>Children</genre>
+          <genre>Mystery</genre>
+        </genres>
+        <price>20.00</price>
+        <stock>20</stock>
+        <format>Paperback</format>
+        <images>
+          <image><path>https://images.unsplash.com/photo-1505904267562-f02eaeb45a4c?auto=format&amp;fit=crop&amp;w=900&amp;q=80</path></image>
+        </images>
+        <concepts>
+          <concept><term>Magic</term><definition>Harry faces a prison escape and deeper truths about the magical world.</definition></concept>
+          <concept><term>Growth</term><definition>The story deepens the emotional and moral development of the characters.</definition></concept>
+        </concepts>
+      </book>
+
+      <book>
+        <isbn>978-8432218393</isbn>
+        <title>La tierra de los espíritus</title>
+        <author>Haruki Murakami</author>
+        <publicationYear>2010</publicationYear>
+        <genres>
+          <genre>Science Fiction</genre>
+          <genre>Mystery</genre>
+        </genres>
+        <price>26.50</price>
+        <stock>9</stock>
+        <format>Hardcover</format>
+        <images>
+          <image><path>https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&amp;fit=crop&amp;w=900&amp;q=80</path></image>
+        </images>
+        <concepts>
+          <concept><term>Paranormal Encounters</term><definition>Spiritual and ancestral forces reveal truth about the past and present.</definition></concept>
+          <concept><term>Parallel Realities</term><definition>The novel explores hidden worlds and emotional dimensions.</definition></concept>
+        </concepts>
+      </book>
+
+      <book>
+        <isbn>978-8427044102</isbn>
+        <title>Testimonio de sangre</title>
+        <author>Agatha Christie</author>
+        <publicationYear>1952</publicationYear>
+        <genres>
+          <genre>Mystery</genre>
+          <genre>Fiction</genre>
+        </genres>
+        <price>19.99</price>
+        <stock>11</stock>
+        <format>Paperback</format>
+        <images>
+          <image><path>https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&amp;fit=crop&amp;w=900&amp;q=80</path></image>
+        </images>
+        <concepts>
+          <concept><term>Psychological Mystery</term><definition>The analysis of the characters reveals the truth behind a buried crime.</definition></concept>
+          <concept><term>Classic Investigation</term><definition>A deep family drama unfolds through careful deduction and suspense.</definition></concept>
+        </concepts>
+      </book>
+    </books>
+  </catalog>
+</library>
